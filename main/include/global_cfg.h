@@ -106,9 +106,9 @@
 
 /* Configuración de video */
 #define VIDEO_FORMAT_DEFAULT              VIDEO_FORMAT_RGB888
-#define VIDEO_WIDTH_DEFAULT               1920
-#define VIDEO_HEIGHT_DEFAULT              1080
-#define VIDEO_FPS_DEFAULT                 10
+#define VIDEO_WIDTH_DEFAULT               1280
+#define VIDEO_HEIGHT_DEFAULT              720
+#define VIDEO_FPS_DEFAULT                 15
 #define VISUAL_ZONE_DIVIDER_COLOR cv::Scalar(0, 0, 255)
 #define VISUAL_BBOX_THICKNESS 3
 #define VISUAL_ZONE_DIVIDER_THICKNESS 2

@@ -512,7 +512,9 @@ std::string model_detector(ma::Model*& model, cv::Mat& frame, bool report, bool 
         return R"({"error":"model is null"})";
     if (frame.empty())
         return R"({"error":"input frame is empty"})";
-    cv::Mat frame_for_annotations = frame.clone();
+    
+    // REMOVED: Unnecessary frame clone that was never used
+    // cv::Mat frame_for_annotations = frame.clone();
 
     ma_img_t img;
     img.data   = (uint8_t*)frame.data;
@@ -523,7 +525,10 @@ std::string model_detector(ma::Model*& model, cv::Mat& frame, bool report, bool 
     img.rotate = MA_PIXEL_ROTATE_0;
 
     auto* detector = static_cast<ma::model::Detector*>(model);
-    detector->setConfig(MA_MODEL_CFG_OPT_THRESHOLD, 0.5);
+    
+    // REMOVED: setConfig per frame - now done once at initialization
+    // detector->setConfig(MA_MODEL_CFG_OPT_THRESHOLD, 0.5);
+    
     auto start_run = std::chrono::high_resolution_clock::now();
     detector->run(&img);
     auto end_run      = std::chrono::high_resolution_clock::now();
@@ -674,10 +679,10 @@ std::string model_detector(ma::Model*& model, cv::Mat& frame, bool report, bool 
                     cv::Mat image_bgr, image_bgr_raw;
                     if (frame.channels() == 3) {
                         cv::cvtColor(frame, image_bgr, cv::COLOR_RGB2BGR);
-                        cv::cvtColor(frame_for_annotations, image_bgr_raw, cv::COLOR_RGB2BGR);
+                        cv::cvtColor(frame, image_bgr_raw, cv::COLOR_RGB2BGR);  // Use frame directly
                     } else {
                         image_bgr     = frame.clone();
-                        image_bgr_raw = frame_for_annotations.clone();
+                        image_bgr_raw = frame.clone();  // Use frame directly
                     }
                     {
                         std::lock_guard<std::mutex> lock(save_mutex);

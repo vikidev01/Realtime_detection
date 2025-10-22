@@ -124,18 +124,27 @@ connectivity_mode_t parse_mode(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    printf("[DEBUG] Starting VanDetect...\n");
     load_config(PATH_CONF);
+    printf("[DEBUG] Config loaded\n");
+    
     connectivity_mode = parse_mode(argc, argv);
+    printf("[DEBUG] Mode parsed: %d\n", connectivity_mode);
+    
     signal(SIGINT, app_ipcam_ExitSig_handle);
     signal(SIGTERM, app_ipcam_ExitSig_handle);
+    printf("[DEBUG] Signals configured\n");
+    
     initWiFi();
     initHttpd();
-    initConnectivity(connectivity_mode); 
+    initConnectivity(connectivity_mode);
 
+    printf("[DEBUG] About to call initVideo()\n");
     if (initVideo()) {
         printf("[ERROR] initVideo() falló\n");
         return -1;
     }
+    printf("[DEBUG] initVideo() succeeded\n");
 
     video_ch_param_t param;
     
@@ -144,9 +153,16 @@ int main(int argc, char* argv[]) {
     param.height = VIDEO_HEIGHT_DEFAULT;
     param.fps    = VIDEO_FPS_DEFAULT;
 
+    printf("[DEBUG] About to call setupVideo()\n");
     setupVideo(VIDEO_CH0, &param);
+    printf("[DEBUG] setupVideo() succeeded\n");
+    
+    printf("[DEBUG] About to register video frame handler\n");
     int ret = registerVideoFrameHandler(VIDEO_CH0, 0, fpRunYolo_CH0, NULL);
+    printf("[DEBUG] Video frame handler registered\n");
+    
     // Usar la constante definida para la ruta del modelo
+    printf("[DEBUG] About to initialize model\n");
     g_model = initialize_model("/usr/local/bin/yolo11n_cv181x_int8.cvimodel");
     if (!g_model) {
         char msg[128];
@@ -156,11 +172,20 @@ int main(int argc, char* argv[]) {
         deinitVideo();
         return -1;
     }
+    printf("[DEBUG] Model initialized successfully\n");
+    
+    // Configure model ONCE during initialization instead of per-frame
+    auto* detector = static_cast<ma::model::Detector*>(g_model);
+    detector->setConfig(MA_MODEL_CFG_OPT_THRESHOLD, 0.5);
+    printf("[OPTIMIZATION] Model configured once at startup\n");
     std::thread saver(imageSaverThread);
     saver.detach();
-    startVideo();
+    startVideo(false, false);  // mirror=false, flip=false
+    
     startPeriodicTimeSync();
     sendMacId();
+    
+    printf("[INFO] VanDetect started - model and detection running\n");
     while (1) sleep(1);
 
     return 0;
