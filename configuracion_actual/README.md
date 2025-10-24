@@ -16,6 +16,15 @@ Este documento describe la ubicación y función de los archivos necesarios para
 | **/etc/realtime-detection/** | Carpeta | Directorio de configuración del modo de operación. |
 | **mode** | `/etc/realtime-detection/mode` | Archivo que define el modo de comunicación del sistema. Su contenido debe ser **`http`** o **`mqtt`** (una sola palabra). |
 
+cd /etc/init.d/
+sudo cp S93sscma-supervisor /home/recamera/
+sudo cp S91sscma-node /home/recamera/
+sudo cp S03node-red /home/recamera/
+sudo cp S99user /home/recamera/
+sudo rm S93sscma-supervisor
+sudo rm S91sscma-node
+sudo rm S03node-red
+sudo rm S99user
 ---
 
 ## 🛠️ Ejemplo de contenido del archivo `mode`
